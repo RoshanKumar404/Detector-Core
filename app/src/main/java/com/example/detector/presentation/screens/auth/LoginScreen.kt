@@ -1,10 +1,11 @@
 package com.example.detector.presentation.screens.auth
 
 import android.widget.Toast
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
@@ -59,12 +60,13 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 24.dp, vertical = 16.dp),
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp, vertical = 32.dp),
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "Welcome Back 🌊",
-                fontSize = 28.sp,
+                text = "Welcome Back",
+                fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextDark
             )
@@ -91,7 +93,7 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
                 placeholder = { Text("example@domain.com") },
                 leadingIcon = { Icon(Icons.Default.Email, contentDescription = "Email", tint = DeepTeal) },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(8.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = DeepTeal,
@@ -124,7 +126,7 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
                 leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Password", tint = DeepTeal) },
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(8.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = DeepTeal,
@@ -140,7 +142,7 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = DeepTeal),
                 enabled = uiState !is LoginUiState.Loading
             ) {
@@ -148,54 +150,6 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
                     CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                 } else {
                     Text("Login", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Or continue with Divider
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Fixed Material 3 Component
-                HorizontalDivider(modifier = Modifier.weight(1f), color = Color.LightGray)
-                Text(
-                    text = "or continue with",
-                    modifier = Modifier.padding(horizontal = 12.dp),
-                    color = TextMuted,
-                    fontSize = 13.sp
-                )
-                HorizontalDivider(modifier = Modifier.weight(1f), color = Color.LightGray)
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Social Logins
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                OutlinedButton(
-                    onClick = { /* Google Login */ },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(48.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, Color.LightGray)
-                ) {
-                    Text("Google", color = TextDark, fontWeight = FontWeight.SemiBold)
-                }
-
-                OutlinedButton(
-                    onClick = { /* Facebook Login */ },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(48.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, Color.LightGray)
-                ) {
-                    Text("Facebook", color = TextDark, fontWeight = FontWeight.SemiBold)
                 }
             }
 
