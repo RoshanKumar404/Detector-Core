@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -39,12 +40,22 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel) {
     ) { innerPadding ->
         when (val state = uiState) {
             is HomeUiState.Loading -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ) {
                     CircularProgressIndicator(color = DeepTeal)
                 }
             }
             is HomeUiState.Error -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding),
+                    contentAlignment = Alignment.Center
+                ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(text = state.message, color = Color.Red, fontSize = 16.sp)
                         Spacer(modifier = Modifier.height(8.dp))
@@ -87,8 +98,8 @@ fun HomeScreenContent(
             ) {
                 Column {
                     Text(
-                        text = "Hello, ${state.user?.name ?: "User"} 👋",
-                        fontSize = 22.sp,
+                        text = "Hello, ${state.user?.name ?: "User"}",
+                        fontSize = 21.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextDark
                     )
@@ -126,7 +137,7 @@ fun HomeScreenContent(
                     .height(110.dp)
                     .background(
                         Brush.horizontalGradient(listOf(DeepTeal, SurfaceDark)),
-                        shape = RoundedCornerShape(16.dp)
+                        shape = RoundedCornerShape(8.dp)
                     )
                     .padding(20.dp)
             ) {
@@ -196,7 +207,7 @@ fun HomeScreenContent(
                         subtitle = "My Reports",
                         iconColor = Color(0xFF00C853),
                         backgroundColor = Color(0xFFE8F5E9),
-                        icon = Icons.Default.List,
+                        icon = Icons.AutoMirrored.Filled.List,
                         onClick = { navController.navigate(Screen.Tracking.route) }
                     )
                 }
@@ -301,7 +312,7 @@ fun QuickActionItem(
         Box(
             modifier = Modifier
                 .size(60.dp)
-                .background(backgroundColor, shape = RoundedCornerShape(16.dp)),
+                .background(backgroundColor, shape = RoundedCornerShape(8.dp)),
             contentAlignment = Alignment.Center
         ) {
             Icon(icon, contentDescription = null, tint = iconColor, modifier = Modifier.size(28.dp))
@@ -316,7 +327,7 @@ fun QuickActionItem(
 fun StatCard(count: String, label: String, modifier: Modifier = Modifier) {
     Card(
         modifier = modifier,
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(containerColor = SurfaceLight)
     ) {
         Column(
@@ -336,7 +347,7 @@ fun RecentReportRow(report: Issue, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(containerColor = SurfaceLight)
     ) {
         Row(
@@ -384,6 +395,9 @@ fun RecentReportRow(report: Issue, onClick: () -> Unit) {
 @Composable
 fun BottomNavigationBar(navController: NavController, activeRoute: String) {
     NavigationBar(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(88.dp),
         containerColor = SurfaceLight,
         tonalElevation = 8.dp
     ) {
@@ -431,7 +445,7 @@ fun BottomNavigationBar(navController: NavController, activeRoute: String) {
         Box(
             modifier = Modifier
                 .weight(1f)
-                .fillMaxHeight(),
+                .height(80.dp),
             contentAlignment = Alignment.Center
         ) {
             FloatingActionButton(
@@ -454,7 +468,7 @@ fun BottomNavigationBar(navController: NavController, activeRoute: String) {
                     }
                 }
             },
-            icon = { Icon(Icons.Default.List, contentDescription = "Reports") },
+            icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Reports") },
             label = { Text("Reports") },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = DeepTeal,
