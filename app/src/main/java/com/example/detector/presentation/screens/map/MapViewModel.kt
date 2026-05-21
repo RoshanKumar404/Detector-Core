@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
 sealed interface MapUiState {
     object Loading : MapUiState
@@ -36,7 +37,7 @@ class MapViewModel(
                 val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
                 var userLoc: Location? = null
                 try {
-                    userLoc = fusedLocationClient.lastLocation.addOnCompleteListener {}.result
+                    userLoc = fusedLocationClient.lastLocation.await()
                 } catch (e: SecurityException) {
                     // Ignore
                 }
