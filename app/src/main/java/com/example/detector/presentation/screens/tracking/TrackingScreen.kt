@@ -1,6 +1,5 @@
 package com.example.detector.presentation.screens.tracking
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -9,7 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -118,7 +117,7 @@ fun FilterTabsRow(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
-            .background(Color.LightGray.copy(alpha = 0.3f), RoundedCornerShape(12.dp))
+            .background(Color.LightGray.copy(alpha = 0.3f), RoundedCornerShape(8.dp))
             .padding(4.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -130,7 +129,7 @@ fun FilterTabsRow(
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .clip(RoundedCornerShape(8.dp))
+                    .clip(RoundedCornerShape(6.dp))
                     .background(tabBackground)
                     .clickable { onFilterSelected(filter) }
                     .padding(vertical = 10.dp),
@@ -153,7 +152,7 @@ fun TrackingReportCard(report: Issue, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(containerColor = SurfaceLight),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
@@ -168,7 +167,7 @@ fun TrackingReportCard(report: Issue, onClick: () -> Unit) {
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(72.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(8.dp))
                     .background(Color.LightGray)
             )
 
@@ -212,7 +211,7 @@ fun TrackingReportCard(report: Issue, onClick: () -> Unit) {
 
             // Arrow indicator
             Icon(
-                Icons.Default.KeyboardArrowRight,
+                Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = "Details",
                 tint = TextMuted
             )

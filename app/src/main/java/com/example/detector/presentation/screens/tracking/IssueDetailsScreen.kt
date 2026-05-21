@@ -6,7 +6,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Place
@@ -47,7 +47,7 @@ fun IssueDetailsScreen(
                 title = { Text("Report Details", fontWeight = FontWeight.Bold, color = TextDark) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = TextDark)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = TextDark)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = LightBackground)
@@ -100,7 +100,7 @@ fun IssueDetailsScreen(
                             modifier = Modifier
                                 .align(Alignment.BottomStart)
                                 .padding(16.dp)
-                                .background(tagColor, RoundedCornerShape(8.dp))
+                                .background(tagColor, RoundedCornerShape(6.dp))
                                 .padding(horizontal = 14.dp, vertical = 6.dp)
                         ) {
                             Text(
@@ -138,7 +138,7 @@ fun IssueDetailsScreen(
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(containerColor = SurfaceLight),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(8.dp)
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -165,7 +165,7 @@ fun IssueDetailsScreen(
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(containerColor = SurfaceLight),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(8.dp)
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -192,7 +192,7 @@ fun IssueDetailsScreen(
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(containerColor = SurfaceLight),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(8.dp)
                         ) {
                             Column(modifier = Modifier.padding(16.dp)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {

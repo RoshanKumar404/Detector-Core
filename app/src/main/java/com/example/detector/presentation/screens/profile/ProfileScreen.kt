@@ -7,8 +7,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExitToApp
-import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
@@ -104,7 +104,7 @@ fun ProfileScreen(navController: NavController) {
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = DeepTeal.copy(alpha = 0.08f)),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(8.dp)
             ) {
                 Row(
                     modifier = Modifier.padding(16.dp),
@@ -114,13 +114,13 @@ fun ProfileScreen(navController: NavController) {
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = user?.municipalityName ?: "Kathmandu Municipality",
+                            text = user?.municipalityName ?: "Municipality not selected",
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
                             color = TextDark
                         )
                         Text(
-                            text = "Ward Number: ${user?.wardId ?: 4}",
+                            text = user?.wardId?.let { "Ward Number: $it" } ?: "Ward not selected",
                             fontSize = 12.sp,
                             color = TextMuted
                         )
@@ -156,10 +156,10 @@ fun ProfileScreen(navController: NavController) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE53935)) // Standard Red logout
             ) {
-                Icon(Icons.Default.ExitToApp, contentDescription = null, tint = Color.White)
+                Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null, tint = Color.White)
                 Spacer(modifier = Modifier.width(10.dp))
                 Text("Log Out", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
             }
@@ -178,7 +178,7 @@ fun ProfileSettingRow(
             .fillMaxWidth()
             .padding(vertical = 6.dp)
             .clickable { onClick() },
-        shape = RoundedCornerShape(12.dp),
+        shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(containerColor = SurfaceLight)
     ) {
         Row(
@@ -194,7 +194,7 @@ fun ProfileSettingRow(
                 color = TextDark,
                 modifier = Modifier.weight(1f)
             )
-            Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = TextMuted)
+            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = TextMuted)
         }
     }
 }
