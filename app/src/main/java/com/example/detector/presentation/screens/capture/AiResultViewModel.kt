@@ -1,17 +1,23 @@
 package com.example.detector.presentation.screens.capture
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.location.Location
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.detector.domain.repository.IssueRepository
+import com.google.android.gms.location.Priority
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.tasks.CancellationTokenSource
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.io.File
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withTimeoutOrNull
 
 sealed interface AiResultUiState {
     object Idle : AiResultUiState
@@ -57,24 +63,20 @@ class AiResultViewModel(
                     return@launch
                 }
 
-                // Fetch Location coordinates natively
-                val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-                var loc: Location? = null
-                try {
-                    loc = fusedLocationClient.lastLocation.await()
-                } catch (e: SecurityException) {
-                    // Ignore
+                val loc = getReportLocation(context)
+                if (loc == null || !loc.hasValidReportCoordinates()) {
+                    _uiState.value = AiResultUiState.Error(
+                        "Could not get a valid GPS location. Please enable location and try again outdoors."
+                    )
+                    return@launch
                 }
-
-                val lat = loc?.latitude ?: 0.0
-                val lon = loc?.longitude ?: 0.0
 
                 val bytes = file.readBytes()
                 issueRepository.createIssue(
                     imageBytes = bytes,
                     filename = file.name,
-                    latitude = lat,
-                    longitude = lon,
+                    latitude = loc.latitude,
+                    longitude = loc.longitude,
                     prediction = prediction,
                     confidence = confidence
                 )
@@ -88,5 +90,44 @@ class AiResultViewModel(
 
     fun resetState() {
         _uiState.value = AiResultUiState.Idle
+    }
+
+    private suspend fun getReportLocation(context: Context): Location? {
+        val fineGranted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        val coarseGranted = ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (!fineGranted && !coarseGranted) return null
+
+        val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+
+        return try {
+            val lastLocation = fusedLocationClient.lastLocation.await()
+            if (lastLocation?.hasValidReportCoordinates() == true) {
+                lastLocation
+            } else {
+                val tokenSource = CancellationTokenSource()
+                withTimeoutOrNull(10_000) {
+                    fusedLocationClient
+                        .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, tokenSource.token)
+                        .await()
+                }.also {
+                    if (it == null) tokenSource.cancel()
+                }
+            }
+        } catch (e: SecurityException) {
+            null
+        }
+    }
+
+    private fun Location.hasValidReportCoordinates(): Boolean {
+        return latitude in -90.0..90.0 &&
+            longitude in -180.0..180.0 &&
+            !(latitude == 0.0 && longitude == 0.0)
     }
 }
