@@ -89,7 +89,7 @@ fun AiResultScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(300.dp)
-                        .clip(RoundedCornerShape(16.dp))
+                        .clip(RoundedCornerShape(8.dp))
                         .background(Color.DarkGray)
                 ) {
                     AsyncImage(
@@ -157,7 +157,7 @@ fun AiResultScreen(
 
                     // Progress bar
                     LinearProgressIndicator(
-                        progress = confidence.toFloat(),
+                        progress = { confidence.toFloat() },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(8.dp)
@@ -171,6 +171,7 @@ fun AiResultScreen(
                     // Notice Message Banner
                     Card(
                         modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
                         colors = CardDefaults.cardColors(containerColor = SurfaceLight)
                     ) {
                         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -197,7 +198,7 @@ fun AiResultScreen(
                     modifier = Modifier
                         .weight(1f)
                         .height(52.dp),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(8.dp),
                     border = BorderStroke(1.dp, Color.Gray)
                 ) {
                     Text("Retake Photo", color = TextDark, fontWeight = FontWeight.Bold)
@@ -210,7 +211,7 @@ fun AiResultScreen(
                     modifier = Modifier
                         .weight(1f)
                         .height(52.dp),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = DeepTeal),
                     enabled = uiState is AiResultUiState.Analyzed && uiState !is AiResultUiState.Submitting
                 ) {
