@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 
 sealed interface HomeUiState {
     object Loading : HomeUiState
@@ -37,10 +38,19 @@ class HomeViewModel(
 
     fun loadDashboardData() {
         viewModelScope.launch {
-            _uiState.value = HomeUiState.Loading
+            val user = sessionManager.getUser()
+            _uiState.value = HomeUiState.Success(
+                user = user,
+                newCount = 0,
+                inProgressCount = 0,
+                resolvedCount = 0,
+                recentReports = emptyList()
+            )
+
             try {
-                val user = sessionManager.getUser()
-                val issues = issueRepository.getIssues()
+                val issues = withTimeout(15_000) {
+                    issueRepository.getIssues()
+                }
 
                 // Calculate local stats based on actual reports
                 val newCount = issues.count { it.status.lowercase() == "pending" }
@@ -58,7 +68,13 @@ class HomeViewModel(
                     recentReports = recent
                 )
             } catch (e: Exception) {
-                _uiState.value = HomeUiState.Error(e.message ?: "Failed to load dashboard data")
+                _uiState.value = HomeUiState.Success(
+                    user = user,
+                    newCount = 0,
+                    inProgressCount = 0,
+                    resolvedCount = 0,
+                    recentReports = emptyList()
+                )
             }
         }
     }
