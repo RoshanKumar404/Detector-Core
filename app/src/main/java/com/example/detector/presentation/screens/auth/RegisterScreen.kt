@@ -1,8 +1,6 @@
 package com.example.detector.presentation.screens.auth
 
 import android.widget.Toast
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.ExposedDropdownMenuDefaults.outlinedTextFieldColors
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -86,8 +84,8 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
                 .padding(horizontal = 24.dp, vertical = 24.dp)
         ) {
             Text(
-                text = "Create Account 🌊",
-                fontSize = 28.sp,
+                text = "Create Account",
+                fontSize = 26.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextDark
             )
@@ -109,7 +107,7 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
                 placeholder = { Text("Enter your name") },
                 leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = DeepTeal) },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(8.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = DeepTeal,
                     unfocusedBorderColor = Color.LightGray
@@ -127,7 +125,7 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
                 placeholder = { Text("example@domain.com") },
                 leadingIcon = { Icon(Icons.Default.Email, contentDescription = null, tint = DeepTeal) },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(8.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = DeepTeal,
@@ -146,7 +144,7 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
                 placeholder = { Text("+91 1234567890") },
                 leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null, tint = DeepTeal) },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(8.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = DeepTeal,
@@ -169,7 +167,7 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
                         .fillMaxWidth()
                         .clickable { municipalityExpanded = true },
                     enabled = false, // Intercepts clicks directly via the Box modifier
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(8.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         disabledTextColor = TextDark,
                         disabledBorderColor = Color.LightGray,
@@ -232,7 +230,7 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
                         .fillMaxWidth()
                         .clickable { if (selectedMunicipalityId != null) wardExpanded = true },
                     enabled = false,
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(8.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         disabledTextColor = if (selectedMunicipalityId == null) TextMuted else TextDark,
                         disabledBorderColor = Color.LightGray,
@@ -294,7 +292,7 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
                 leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = DeepTeal) },
                 visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(8.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = DeepTeal,
                     unfocusedBorderColor = Color.LightGray
@@ -342,7 +340,7 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = DeepTeal),
                 enabled = uiState !is RegisterUiState.Loading
             ) {
