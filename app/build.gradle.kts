@@ -147,6 +147,9 @@ dependencies {
         "org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3"
     )
 
+    // OsmDroid for native OpenStreetMap
+    implementation("org.osmdroid:osmdroid-android:6.1.20")
+
     // Testing
 
     testImplementation("junit:junit:4.13.2")
