@@ -214,6 +214,21 @@ fun HomeScreenContent(
             }
         }
 
+        item {
+            Button(
+                onClick = { navController.navigate(Screen.AllIssues.route) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = DeepTeal)
+            ) {
+                Icon(Icons.AutoMirrored.Filled.List, contentDescription = null, tint = Color.White)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("View All Issues", color = Color.White, fontWeight = FontWeight.Bold)
+            }
+        }
+
         // Nearby Overview stats
         item {
             Column {
