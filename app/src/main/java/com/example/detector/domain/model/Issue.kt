@@ -10,5 +10,6 @@ data class Issue(
     val description: String,
     val status: String, // "pending", "in_progress", "resolved"
     val createdAt: String,
-    val updatedAt: String
+    val updatedAt: String,
+    val municipalityName: String? = null
 )
