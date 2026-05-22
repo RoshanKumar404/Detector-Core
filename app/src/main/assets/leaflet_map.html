@@ -2,8 +2,8 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="leaflet.css" />
+    <script src="leaflet.js"></script>
     <style>
         body, html, #map {
             margin: 0;
@@ -63,14 +63,58 @@
     <div id="map"></div>
     <div id="mapMessage" class="map-message"></div>
     <script>
+        // Error logging for debugging in Android Logcat
+        window.onerror = function(msg, url, line, col, error) {
+            console.error('JS Error: ' + msg + ' at ' + url + ':' + line);
+            return false;
+        };
+
         var map = L.map('map', {
             zoomControl: false
         }).setView([23.4118443, 85.2304231], 13);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        // Primary tile layer: OpenStreetMap
+        var osmLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; OpenStreetMap contributors',
             maxZoom: 19
-        }).addTo(map);
+        });
+
+        // Fallback tile layer: CartoDB Voyager (if OSM fails)
+        var cartoLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap &amp; CartoDB',
+            maxZoom: 19,
+            subdomains: 'abcd'
+        });
+
+        var tileErrorCount = 0;
+        osmLayer.on('tileerror', function(e) {
+            tileErrorCount++;
+            console.error('Tile load error #' + tileErrorCount + ': ' + (e.tile ? e.tile.src : 'unknown'));
+            if (tileErrorCount >= 3) {
+                console.log('Switching to CartoDB fallback tiles');
+                map.removeLayer(osmLayer);
+                cartoLayer.addTo(map);
+            }
+        });
+
+        osmLayer.addTo(map);
+
+        // Log tile loading for debugging
+        osmLayer.on('tileload', function() {
+            if (tileErrorCount === 0) {
+                console.log('Tiles loading successfully');
+                // Remove listener after first success to avoid spam
+                osmLayer.off('tileload');
+            }
+        });
+
+        // Force map to recalculate size multiple times as WebView layout settles
+        // This is critical for Leaflet inside Android WebView/Compose
+        [100, 300, 600, 1000].forEach(function(delay) {
+            setTimeout(function() {
+                map.invalidateSize();
+            }, delay);
+        });
 
         var markersGroup = L.layerGroup().addTo(map);
         var heatGroup = L.layerGroup().addTo(map);
@@ -168,6 +212,9 @@
             } else {
                 map.fitBounds(L.latLngBounds(latLngs), { padding: [50, 50] });
             }
+
+            // Ensure tiles load after viewport change
+            setTimeout(function() { map.invalidateSize(); }, 200);
         };
 
         window.setMyLocation = function(lat, lng) {
