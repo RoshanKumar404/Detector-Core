@@ -57,6 +57,25 @@ fun CaptureScreen(navController: NavController) {
     var currentLocation by remember { mutableStateOf<Location?>(null) }
     val fusedLocationClient = remember { LocationServices.getFusedLocationProviderClient(context) }
 
+    val galleryLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+
+        val copiedFile = copyGalleryImageToCache(context, uri)
+        if (copiedFile == null) {
+            Toast.makeText(context, "Could not read selected image", Toast.LENGTH_SHORT).show()
+        } else {
+            navController.navigate(
+                Screen.AiResult.createRoute(
+                    imagePath = Uri.encode(copiedFile.absolutePath),
+                    prediction = "Analyzing",
+                    confidence = 0.0f
+                )
+            )
+        }
+    }
+
     // Permission launcher
     val permissionsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions()
@@ -199,12 +218,21 @@ fun CaptureScreen(navController: NavController) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Placeholder Gallery thumbnail
+                // Gallery picker
                 Box(
                     modifier = Modifier
                         .size(48.dp)
                         .background(Color.White.copy(alpha = 0.2f), shape = RoundedCornerShape(12.dp))
-                )
+                        .clickable { galleryLauncher.launch("image/*") },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "Gallery",
+                        color = Color.White,
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
 
                 // Shutter button
                 Box(
@@ -280,4 +308,21 @@ private fun getOutputDirectory(context: Context): File {
         File(it, context.resources.getString(com.example.detector.R.string.app_name)).apply { mkdirs() }
     }
     return if (mediaDir != null && mediaDir.exists()) mediaDir else context.filesDir
+}
+
+private fun copyGalleryImageToCache(context: Context, uri: Uri): File? {
+    return try {
+        val outputFile = File(
+            context.cacheDir,
+            "gallery-${System.currentTimeMillis()}.jpg"
+        )
+        context.contentResolver.openInputStream(uri)?.use { input ->
+            outputFile.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        } ?: return null
+        outputFile
+    } catch (e: Exception) {
+        null
+    }
 }

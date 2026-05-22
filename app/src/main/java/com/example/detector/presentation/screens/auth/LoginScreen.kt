@@ -96,8 +96,17 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
                 shape = RoundedCornerShape(8.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = TextDark,
+                    unfocusedTextColor = TextDark,
+                    focusedPlaceholderColor = TextMuted,
+                    unfocusedPlaceholderColor = TextMuted,
+                    focusedLeadingIconColor = DeepTeal,
+                    unfocusedLeadingIconColor = DeepTeal,
+                    cursorColor = DeepTeal,
                     focusedBorderColor = DeepTeal,
-                    unfocusedBorderColor = Color.LightGray
+                    unfocusedBorderColor = Color.LightGray,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
                 )
             )
 
@@ -129,8 +138,17 @@ fun LoginScreen(navController: NavController, viewModel: LoginViewModel) {
                 shape = RoundedCornerShape(8.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = TextDark,
+                    unfocusedTextColor = TextDark,
+                    focusedPlaceholderColor = TextMuted,
+                    unfocusedPlaceholderColor = TextMuted,
+                    focusedLeadingIconColor = DeepTeal,
+                    unfocusedLeadingIconColor = DeepTeal,
+                    cursorColor = DeepTeal,
                     focusedBorderColor = DeepTeal,
-                    unfocusedBorderColor = Color.LightGray
+                    unfocusedBorderColor = Color.LightGray,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
                 )
             )
 
