@@ -54,6 +54,26 @@ class IssueRepositoryImpl(
         }
     }
 
+    override suspend fun getGlobalIssues(): List<Issue> {
+        return apiService.getGlobalIssues(getAuthToken()).map {
+            Issue(
+                id = it.id.toString(),
+                userId = it.userId.toString(),
+                imageUrl = it.imageUrl,
+                latitude = it.latitude,
+                longitude = it.longitude,
+                severity = if (it.prediction == "waterlogged") "high" else "low",
+                description = it.prediction,
+                status = it.status,
+                createdAt = it.createdAt,
+                updatedAt = it.createdAt,
+                municipalityName = it.municipalityName,
+                userName = it.userName
+            )
+        }
+    }
+
+
     override suspend fun createIssue(
         imageBytes: ByteArray,
         filename: String,

@@ -34,6 +34,12 @@ interface ApiService {
         @Header("Authorization") token: String
     ): List<IssueDto>
 
+    @GET("issues/global")
+    suspend fun getGlobalIssues(
+        @Header("Authorization") token: String
+    ): List<IssueDto>
+
+
     @GET("issues/map")
     suspend fun getMapIssues(
         @Header("Authorization") token: String
