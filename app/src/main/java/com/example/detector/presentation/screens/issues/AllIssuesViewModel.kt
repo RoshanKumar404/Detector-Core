@@ -30,7 +30,8 @@ class AllIssuesViewModel(
         viewModelScope.launch {
             _uiState.value = AllIssuesUiState.Loading
             try {
-                _uiState.value = AllIssuesUiState.Success(issueRepository.getMapIssues())
+                val issues = issueRepository.getMapIssues().sortedByDescending { it.createdAt }
+                _uiState.value = AllIssuesUiState.Success(issues)
             } catch (e: Exception) {
                 _uiState.value = AllIssuesUiState.Error(e.message ?: "Failed to load issues")
             }
