@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,6 +16,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -96,30 +100,87 @@ fun AllIssuesScreen(
                 }
             }
             is AllIssuesUiState.Success -> {
-                if (state.issues.isEmpty()) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("No issues found.", color = TextMuted)
+                var selectedMunicipality by remember { mutableStateOf("All") }
+
+                val municipalities = remember(state.issues) {
+                    val list = state.issues.mapNotNull { it.municipalityName }
+                        .filter { it.isNotBlank() }
+                        .distinct()
+                        .sorted()
+                    listOf("All") + list
+                }
+
+                val filteredIssues = remember(state.issues, selectedMunicipality) {
+                    if (selectedMunicipality == "All") {
+                        state.issues
+                    } else {
+                        state.issues.filter { it.municipalityName == selectedMunicipality }
                     }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(innerPadding),
-                        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        items(state.issues) { issue ->
-                            IssueSummaryCard(
-                                issue = issue,
-                                onClick = {
-                                    navController.navigate(Screen.IssueDetails.createRoute(issue.id))
-                                }
+                }
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                ) {
+                    if (municipalities.size > 1) {
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(LightBackground)
+                        ) {
+                            items(municipalities) { municipality ->
+                                val isSelected = municipality == selectedMunicipality
+                                FilterChip(
+                                    selected = isSelected,
+                                    onClick = { selectedMunicipality = municipality },
+                                    label = { Text(municipality) },
+                                    colors = FilterChipDefaults.filterChipColors(
+                                        selectedContainerColor = DeepTeal,
+                                        selectedLabelColor = Color.White,
+                                        containerColor = SurfaceLight,
+                                        labelColor = TextMuted
+                                    ),
+                                    border = FilterChipDefaults.filterChipBorder(
+                                        enabled = true,
+                                        selected = isSelected,
+                                        selectedBorderColor = DeepTeal,
+                                        borderColor = Color.LightGray.copy(alpha = 0.5f),
+                                        borderWidth = 1.dp,
+                                        selectedBorderWidth = 1.dp
+                                    ),
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                            }
+                        }
+                    }
+
+                    if (filteredIssues.isEmpty()) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (selectedMunicipality == "All") "No issues found." else "No issues found for $selectedMunicipality.",
+                                color = TextMuted
                             )
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(filteredIssues, key = { it.id }) { issue ->
+                                IssueSummaryCard(
+                                    issue = issue,
+                                    onClick = {
+                                        navController.navigate(Screen.IssueDetails.createRoute(issue.id))
+                                    }
+                                )
+                            }
                         }
                     }
                 }
