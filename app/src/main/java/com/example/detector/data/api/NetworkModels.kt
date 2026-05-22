@@ -56,6 +56,9 @@ data class WardDto(
 data class IssueDto(
     val id: Int,
     @SerializedName("user_id") val userId: Int,
+    @SerializedName("user_name") val userName: String?,
+    @SerializedName("municipality_id") val municipalityId: Int?,
+    @SerializedName("municipality_name") val municipalityName: String?,
     @SerializedName("image_url") val imageUrl: String,
     val latitude: Double,
     val longitude: Double,
@@ -64,6 +67,7 @@ data class IssueDto(
     val status: String,
     @SerializedName("created_at") val createdAt: String
 )
+
 
 data class CreateIssueResponseDto(
     val message: String,
