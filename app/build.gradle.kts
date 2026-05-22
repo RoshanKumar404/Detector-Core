@@ -18,15 +18,28 @@ android {
         testInstrumentationRunner =
             "androidx.test.runner.AndroidJUnitRunner"
     }
+    splits {
+        abi {
+            isEnable = true
+            reset()
+
+            include(
+                "armeabi-v7a",
+                "arm64-v8a"
+            )
+
+            isUniversalApk = false
+        }
+    }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
 
             proguardFiles(
                 getDefaultProguardFile(
-                    "proguard-android-optimize.txt"
-                ),
+                    "proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
@@ -46,6 +59,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 

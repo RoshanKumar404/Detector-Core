@@ -15,7 +15,7 @@
         .custom-popup .leaflet-popup-content-wrapper {
             background: #ffffff;
             color: #1e293b;
-            border-radius: 12px;
+            border-radius: 8px;
             padding: 4px;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
@@ -42,28 +42,74 @@
         .status-pending { background-color: #e67e22; }
         .status-progress { background-color: #2980b9; }
         .status-resolved { background-color: #27ae60; }
+        .map-message {
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            bottom: 24px;
+            z-index: 1000;
+            background: rgba(255,255,255,0.94);
+            color: #64748b;
+            font: 600 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            padding: 12px 14px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div id="map"></div>
+    <div id="mapMessage" class="map-message"></div>
     <script>
         var map = L.map('map', {
             zoomControl: false
-        }).setView([27.7172, 85.3240], 13); // Default Kathmandu
+        }).setView([23.4118443, 85.2304231], 13);
 
-        // Add Light-themed CartoDB Voyager tiles for modern visual aesthetics
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 19
         }).addTo(map);
 
         var markersGroup = L.layerGroup().addTo(map);
+        var heatGroup = L.layerGroup().addTo(map);
+        var userMarker = null;
 
-        // API accessible to Android code
-        function updateMapPoints(featuresJsonString) {
+        function showMessage(text) {
+            var message = document.getElementById('mapMessage');
+            message.innerText = text;
+            message.style.display = 'block';
+        }
+
+        function hideMessage() {
+            document.getElementById('mapMessage').style.display = 'none';
+        }
+
+        window.updateMapPoints = function(featuresPayload) {
             markersGroup.clearLayers();
-            var features = JSON.parse(featuresJsonString);
+            heatGroup.clearLayers();
+            hideMessage();
 
-            if (features.length === 0) return;
+            var features = Array.isArray(featuresPayload)
+                ? featuresPayload
+                : JSON.parse(featuresPayload || '[]');
+
+            features = features.filter(function(item) {
+                return item &&
+                    typeof item.latitude === 'number' &&
+                    typeof item.longitude === 'number' &&
+                    item.latitude >= -90 &&
+                    item.latitude <= 90 &&
+                    item.longitude >= -180 &&
+                    item.longitude <= 180 &&
+                    !(item.latitude === 0 && item.longitude === 0);
+            });
+
+            if (features.length === 0) {
+                showMessage('No valid report coordinates to show on the map.');
+                return;
+            }
 
             var latLngs = [];
 
@@ -72,10 +118,10 @@
                 var lng = item.longitude;
                 var status = (item.status || 'pending').toLowerCase();
                 var prediction = item.prediction || 'waterlogged';
-                
-                var color = '#e67e22'; // Orange default
+
+                var color = '#e67e22';
                 var statusClass = 'status-pending';
-                
+
                 if (status === 'in_progress') {
                     color = '#2980b9';
                     statusClass = 'status-progress';
@@ -84,39 +130,48 @@
                     statusClass = 'status-resolved';
                 }
 
+                var heatCircle = L.circle([lat, lng], {
+                    radius: 140,
+                    color: color,
+                    weight: 1,
+                    fillColor: color,
+                    fillOpacity: 0.22,
+                    opacity: 0.35
+                });
+
                 var marker = L.circleMarker([lat, lng], {
                     radius: 10,
                     fillColor: color,
                     color: '#ffffff',
                     weight: 2,
                     opacity: 1,
-                    fillOpacity: 0.8
+                    fillOpacity: 0.9
                 });
 
                 var popupContent = `
                     <div style="font-size:13px; line-height:1.4;">
                         <strong>Report #${item.id}</strong><br/>
-                        Severity: ${prediction.toUpperCase()}<br/>
+                        Type: ${prediction.toUpperCase()}<br/>
                         <span class="status-tag ${statusClass}">${status.toUpperCase()}</span><br/>
                         ${item.image_url ? `<img class="popup-img" src="${item.image_url}"/>` : ''}
                     </div>
                 `;
 
                 marker.bindPopup(popupContent, { className: 'custom-popup' });
+                heatGroup.addLayer(heatCircle);
                 markersGroup.addLayer(marker);
                 latLngs.push([lat, lng]);
             });
 
-            // Adjust view to fit all markers if we have any
-            if (latLngs.length > 0) {
-                var bounds = L.latLngBounds(latLngs);
-                map.fitBounds(bounds, { padding: [50, 50] });
+            if (latLngs.length === 1) {
+                map.setView(latLngs[0], 16);
+            } else {
+                map.fitBounds(L.latLngBounds(latLngs), { padding: [50, 50] });
             }
-        }
+        };
 
-        // JS helper to set user location marker
-        var userMarker = null;
-        function setMyLocation(lat, lng) {
+        window.setMyLocation = function(lat, lng) {
+            if (lat === 0 && lng === 0) return;
             if (userMarker) {
                 map.removeLayer(userMarker);
             }
@@ -128,8 +183,7 @@
                 opacity: 1,
                 fillOpacity: 1
             }).addTo(map);
-            map.setView([lat, lng], 15);
-        }
+        };
     </script>
 </body>
 </html>

@@ -1,5 +1,9 @@
 package com.example.detector.presentation.screens.map
 
+import android.annotation.SuppressLint
+import android.webkit.WebSettings
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,14 +14,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavController
-import com.example.detector.domain.model.Issue
 import com.example.detector.presentation.navigation.Screen
 import com.example.detector.presentation.screens.home.BottomNavigationBar
 import com.example.detector.ui.theme.DeepTeal
@@ -28,74 +30,20 @@ import com.example.detector.ui.theme.StatusResolved
 import com.example.detector.ui.theme.SurfaceLight
 import com.example.detector.ui.theme.TextDark
 import com.example.detector.ui.theme.TextMuted
-import org.maplibre.android.MapLibre
-import org.maplibre.android.annotations.MarkerOptions
-import org.maplibre.android.camera.CameraPosition
-import org.maplibre.android.camera.CameraUpdateFactory
-import org.maplibre.android.geometry.LatLng
-import org.maplibre.android.geometry.LatLngBounds
-import org.maplibre.android.maps.MapLibreMap
-import org.maplibre.android.maps.MapView
-import org.maplibre.android.maps.Style
-import org.maplibre.android.style.layers.CircleLayer
-import org.maplibre.android.style.layers.PropertyFactory.circleBlur
-import org.maplibre.android.style.layers.PropertyFactory.circleColor
-import org.maplibre.android.style.layers.PropertyFactory.circleOpacity
-import org.maplibre.android.style.layers.PropertyFactory.circleRadius
-import org.maplibre.android.style.layers.PropertyFactory.circleStrokeColor
-import org.maplibre.android.style.layers.PropertyFactory.circleStrokeOpacity
-import org.maplibre.android.style.layers.PropertyFactory.circleStrokeWidth
-import org.maplibre.android.style.sources.GeoJsonSource
-
-private const val OSM_RASTER_STYLE = """
-{
-  "version": 8,
-  "sources": {
-    "osm": {
-      "type": "raster",
-      "tiles": ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-      "tileSize": 256,
-      "attribution": "© OpenStreetMap contributors"
-    }
-  },
-  "layers": [
-    {
-      "id": "osm",
-      "type": "raster",
-      "source": "osm"
-    }
-  ]
-}
-"""
-
-private val HEAT_SOURCES = listOf(
-    "reports-pending-source",
-    "reports-progress-source",
-    "reports-resolved-source",
-    "user-location-source"
-)
-
-private val HEAT_LAYERS = listOf(
-    "reports-pending-heat",
-    "reports-progress-heat",
-    "reports-resolved-heat",
-    "user-location-heat"
-)
+import com.google.gson.Gson
 
 @OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("SetJavaScriptEnabled")
 @Composable
 fun MapScreen(navController: NavController, viewModel: MapViewModel) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsState()
-    var mapView by remember { mutableStateOf<MapView?>(null) }
-    var mapLibreMap by remember { mutableStateOf<MapLibreMap?>(null) }
-    var styleReady by remember { mutableStateOf(false) }
-
-    LaunchedEffect(context) {
-        MapLibre.getInstance(context.applicationContext)
-    }
+    var webView by remember { mutableStateOf<WebView?>(null) }
+    var pageReady by remember { mutableStateOf(false) }
+    val gson = remember { Gson() }
 
     LaunchedEffect(Unit) {
+        WebView.setWebContentsDebuggingEnabled(true)
         viewModel.loadMapData(context)
     }
 
@@ -128,26 +76,22 @@ fun MapScreen(navController: NavController, viewModel: MapViewModel) {
         ) {
             AndroidView(
                 factory = { ctx ->
-                    MapLibre.getInstance(ctx.applicationContext)
-                    MapView(ctx).apply {
-                        onCreate(null)
-                        getMapAsync { loadedMap ->
-                            mapLibreMap = loadedMap
-                            loadedMap.uiSettings.isAttributionEnabled = true
-                            loadedMap.uiSettings.isLogoEnabled = false
-                            loadedMap.cameraPosition = CameraPosition.Builder()
-                                .target(LatLng(27.7172, 85.3240))
-                                .zoom(12.5)
-                                .build()
-                            loadedMap.setStyle(
-                                Style.Builder().fromJson(OSM_RASTER_STYLE)
-                            ) {
-                                styleReady = true
+                    WebView(ctx).apply {
+                        settings.apply {
+                            javaScriptEnabled = true
+                            domStorageEnabled = true
+                            allowFileAccess = true
+                            allowContentAccess = true
+                            mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+                            cacheMode = WebSettings.LOAD_DEFAULT
+                        }
+                        webViewClient = object : WebViewClient() {
+                            override fun onPageFinished(view: WebView?, url: String?) {
+                                pageReady = true
                             }
                         }
-                        onStart()
-                        onResume()
-                        mapView = this
+                        loadUrl("file:///android_asset/leaflet_map.html")
+                        webView = this
                     }
                 },
                 modifier = Modifier.fillMaxSize()
@@ -180,6 +124,11 @@ fun MapScreen(navController: NavController, viewModel: MapViewModel) {
                     )
                 }
                 is MapUiState.Success -> {
+                    val usableIssues = state.issues.filter {
+                        it.latitude in -90.0..90.0 &&
+                            it.longitude in -180.0..180.0 &&
+                            !(it.latitude == 0.0 && it.longitude == 0.0)
+                    }
                     if (state.issues.isEmpty()) {
                         MapMessage(
                             message = "No live reports found yet.",
@@ -187,7 +136,7 @@ fun MapScreen(navController: NavController, viewModel: MapViewModel) {
                             onAction = { viewModel.loadMapData(context) },
                             modifier = Modifier.align(Alignment.Center)
                         )
-                    } else if (state.issues.none { it.hasUsableMapCoordinates() }) {
+                    } else if (usableIssues.isEmpty()) {
                         MapMessage(
                             message = "Reports loaded, but none have valid GPS coordinates yet.",
                             actionText = "Refresh",
@@ -201,24 +150,43 @@ fun MapScreen(navController: NavController, viewModel: MapViewModel) {
     }
 
     val currentState = uiState
-    LaunchedEffect(mapLibreMap, styleReady, currentState) {
-        val loadedMap = mapLibreMap ?: return@LaunchedEffect
-        if (styleReady && currentState is MapUiState.Success) {
-            renderMapOverlays(
-                map = loadedMap,
-                issues = currentState.issues,
-                userLocation = currentState.userLocation?.let {
-                    LatLng(it.latitude, it.longitude)
-                }
-            )
+    LaunchedEffect(webView, pageReady, currentState) {
+        val mapWebView = webView ?: return@LaunchedEffect
+        if (!pageReady || currentState !is MapUiState.Success) return@LaunchedEffect
+
+        val points = currentState.issues
+            .filter {
+                it.latitude in -90.0..90.0 &&
+                    it.longitude in -180.0..180.0 &&
+                    !(it.latitude == 0.0 && it.longitude == 0.0)
+            }
+            .map {
+                mapOf(
+                    "id" to it.id,
+                    "latitude" to it.latitude,
+                    "longitude" to it.longitude,
+                    "status" to it.status,
+                    "prediction" to it.description,
+                    "image_url" to it.imageUrl
+                )
+            }
+
+        mapWebView.evaluateJavascript("window.updateMapPoints(${gson.toJson(points)});", null)
+
+        currentState.userLocation?.let { loc ->
+            if (!(loc.latitude == 0.0 && loc.longitude == 0.0)) {
+                mapWebView.evaluateJavascript(
+                    "window.setMyLocation(${loc.latitude}, ${loc.longitude});",
+                    null
+                )
+            }
         }
     }
 
-    DisposableEffect(mapView) {
+    DisposableEffect(webView) {
         onDispose {
-            mapView?.onPause()
-            mapView?.onStop()
-            mapView?.onDestroy()
+            webView?.stopLoading()
+            webView?.destroy()
         }
     }
 }
@@ -288,128 +256,4 @@ private fun MapMessage(
             }
         }
     }
-}
-
-private fun renderMapOverlays(
-    map: MapLibreMap,
-    issues: List<Issue>,
-    userLocation: LatLng?
-) {
-    map.clear()
-    val style = map.style ?: return
-    clearHeatLayers(style)
-
-    val reportPoints = issues.mapNotNull { issue ->
-        if (issue.hasUsableMapCoordinates()) {
-            issue to LatLng(issue.latitude, issue.longitude)
-        } else {
-            null
-        }
-    }
-
-    addHeatLayer(
-        style = style,
-        sourceId = "reports-pending-source",
-        layerId = "reports-pending-heat",
-        points = reportPoints.filter { it.first.status.lowercase() == "pending" }.map { it.second },
-        color = StatusPending,
-        radius = 28f
-    )
-    addHeatLayer(
-        style = style,
-        sourceId = "reports-progress-source",
-        layerId = "reports-progress-heat",
-        points = reportPoints.filter { it.first.status.lowercase() == "in_progress" }.map { it.second },
-        color = StatusInProgress,
-        radius = 28f
-    )
-    addHeatLayer(
-        style = style,
-        sourceId = "reports-resolved-source",
-        layerId = "reports-resolved-heat",
-        points = reportPoints.filter { it.first.status.lowercase() == "resolved" }.map { it.second },
-        color = StatusResolved,
-        radius = 28f
-    )
-    userLocation?.let {
-        addHeatLayer(
-            style = style,
-            sourceId = "user-location-source",
-            layerId = "user-location-heat",
-            points = listOf(it),
-            color = Color(0xFF00B0FF),
-            radius = 18f
-        )
-    }
-
-    reportPoints.forEach { (issue, point) ->
-        map.addMarker(
-            MarkerOptions()
-                .position(point)
-                .title("Report #${issue.id}")
-                .snippet("${issue.description} - ${issue.status}")
-        )
-    }
-
-    val reportLocations = reportPoints.map { it.second }
-    when {
-        reportLocations.size == 1 -> {
-            map.animateCamera(CameraUpdateFactory.newLatLngZoom(reportLocations.first(), 15.0))
-        }
-        reportLocations.size > 1 -> {
-            val bounds = LatLngBounds.Builder()
-                .includes(reportLocations)
-                .build()
-            map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 96))
-        }
-        userLocation != null -> {
-            map.animateCamera(CameraUpdateFactory.newLatLngZoom(userLocation, 14.0))
-        }
-    }
-}
-
-private fun clearHeatLayers(style: Style) {
-    HEAT_LAYERS.forEach { layerId ->
-        style.getLayer(layerId)?.let { style.removeLayer(it) }
-    }
-    HEAT_SOURCES.forEach { sourceId ->
-        style.getSource(sourceId)?.let { style.removeSource(it) }
-    }
-}
-
-private fun addHeatLayer(
-    style: Style,
-    sourceId: String,
-    layerId: String,
-    points: List<LatLng>,
-    color: Color,
-    radius: Float
-) {
-    if (points.isEmpty()) return
-
-    style.addSource(GeoJsonSource(sourceId, points.toFeatureCollectionJson()))
-    style.addLayer(
-        CircleLayer(layerId, sourceId).withProperties(
-            circleRadius(radius),
-            circleColor(color.toArgb()),
-            circleOpacity(0.32f),
-            circleBlur(0.65f),
-            circleStrokeColor(color.toArgb()),
-            circleStrokeOpacity(0.55f),
-            circleStrokeWidth(1.5f)
-        )
-    )
-}
-
-private fun List<LatLng>.toFeatureCollectionJson(): String {
-    val features = joinToString(separator = ",") { point ->
-        """{"type":"Feature","geometry":{"type":"Point","coordinates":[${point.longitude},${point.latitude}]},"properties":{}}"""
-    }
-    return """{"type":"FeatureCollection","features":[$features]}"""
-}
-
-private fun Issue.hasUsableMapCoordinates(): Boolean {
-    return latitude in -90.0..90.0 &&
-        longitude in -180.0..180.0 &&
-        !(latitude == 0.0 && longitude == 0.0)
 }
