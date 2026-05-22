@@ -7,6 +7,7 @@ import com.example.detector.presentation.screens.auth.LoginViewModel
 import com.example.detector.presentation.screens.auth.RegisterViewModel
 import com.example.detector.presentation.screens.capture.AiResultViewModel
 import com.example.detector.presentation.screens.home.HomeViewModel
+import com.example.detector.presentation.screens.issues.AllIssuesViewModel
 import com.example.detector.presentation.screens.map.MapViewModel
 import com.example.detector.presentation.screens.tracking.IssueDetailsViewModel
 import com.example.detector.presentation.screens.tracking.TrackingViewModel
@@ -26,6 +27,9 @@ class ViewModelFactory : ViewModelProvider.Factory {
             }
             modelClass.isAssignableFrom(MapViewModel::class.java) -> {
                 MapViewModel(ServiceLocator.issueRepository) as T
+            }
+            modelClass.isAssignableFrom(AllIssuesViewModel::class.java) -> {
+                AllIssuesViewModel(ServiceLocator.issueRepository) as T
             }
             modelClass.isAssignableFrom(TrackingViewModel::class.java) -> {
                 TrackingViewModel(ServiceLocator.issueRepository) as T

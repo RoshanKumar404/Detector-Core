@@ -13,6 +13,7 @@ import com.example.detector.presentation.screens.auth.RegisterScreen
 import com.example.detector.presentation.screens.capture.AiResultScreen
 import com.example.detector.presentation.screens.capture.CaptureScreen
 import com.example.detector.presentation.screens.home.HomeScreen
+import com.example.detector.presentation.screens.issues.AllIssuesScreen
 import com.example.detector.presentation.screens.map.MapScreen
 import com.example.detector.presentation.screens.notifications.NotificationsScreen
 import com.example.detector.presentation.screens.profile.ProfileScreen
@@ -75,6 +76,13 @@ fun NavGraph(navController: NavHostController) {
 
         composable(Screen.Map.route) {
             MapScreen(
+                navController = navController,
+                viewModel = viewModel(factory = factory)
+            )
+        }
+
+        composable(Screen.AllIssues.route) {
+            AllIssuesScreen(
                 navController = navController,
                 viewModel = viewModel(factory = factory)
             )
