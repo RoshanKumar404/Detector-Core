@@ -109,8 +109,17 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),
                 colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = TextDark,
+                    unfocusedTextColor = TextDark,
+                    focusedPlaceholderColor = TextMuted,
+                    unfocusedPlaceholderColor = TextMuted,
+                    focusedLeadingIconColor = DeepTeal,
+                    unfocusedLeadingIconColor = DeepTeal,
+                    cursorColor = DeepTeal,
                     focusedBorderColor = DeepTeal,
-                    unfocusedBorderColor = Color.LightGray
+                    unfocusedBorderColor = Color.LightGray,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
                 )
             )
 
@@ -128,8 +137,17 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
                 shape = RoundedCornerShape(8.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = TextDark,
+                    unfocusedTextColor = TextDark,
+                    focusedPlaceholderColor = TextMuted,
+                    unfocusedPlaceholderColor = TextMuted,
+                    focusedLeadingIconColor = DeepTeal,
+                    unfocusedLeadingIconColor = DeepTeal,
+                    cursorColor = DeepTeal,
                     focusedBorderColor = DeepTeal,
-                    unfocusedBorderColor = Color.LightGray
+                    unfocusedBorderColor = Color.LightGray,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
                 )
             )
 
@@ -147,8 +165,17 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
                 shape = RoundedCornerShape(8.dp),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = TextDark,
+                    unfocusedTextColor = TextDark,
+                    focusedPlaceholderColor = TextMuted,
+                    unfocusedPlaceholderColor = TextMuted,
+                    focusedLeadingIconColor = DeepTeal,
+                    unfocusedLeadingIconColor = DeepTeal,
+                    cursorColor = DeepTeal,
                     focusedBorderColor = DeepTeal,
-                    unfocusedBorderColor = Color.LightGray
+                    unfocusedBorderColor = Color.LightGray,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
                 )
             )
 
@@ -168,13 +195,14 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
                         .clickable { municipalityExpanded = true },
                     enabled = false, // Intercepts clicks directly via the Box modifier
                     shape = RoundedCornerShape(8.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        disabledTextColor = TextDark,
-                        disabledBorderColor = Color.LightGray,
-                        disabledLeadingIconColor = DeepTeal,
-                        disabledPlaceholderColor = TextMuted
-                    )
+                colors = OutlinedTextFieldDefaults.colors(
+                    disabledTextColor = TextDark,
+                    disabledBorderColor = Color.LightGray,
+                    disabledLeadingIconColor = DeepTeal,
+                    disabledPlaceholderColor = TextMuted,
+                    disabledContainerColor = Color.Transparent
                 )
+            )
                 // Overlay click interceptor box
                 Box(
                     modifier = Modifier
@@ -231,13 +259,14 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
                         .clickable { if (selectedMunicipalityId != null) wardExpanded = true },
                     enabled = false,
                     shape = RoundedCornerShape(8.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        disabledTextColor = if (selectedMunicipalityId == null) TextMuted else TextDark,
-                        disabledBorderColor = Color.LightGray,
-                        disabledLeadingIconColor = DeepTeal,
-                        disabledPlaceholderColor = TextMuted
-                    )
+                colors = OutlinedTextFieldDefaults.colors(
+                    disabledTextColor = if (selectedMunicipalityId == null) TextMuted else TextDark,
+                    disabledBorderColor = Color.LightGray,
+                    disabledLeadingIconColor = DeepTeal,
+                    disabledPlaceholderColor = TextMuted,
+                    disabledContainerColor = Color.Transparent
                 )
+            )
                 Box(
                     modifier = Modifier
                         .matchParentSize()
@@ -294,8 +323,17 @@ fun RegisterScreen(navController: NavController, viewModel: RegisterViewModel) {
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(8.dp),
                 colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = TextDark,
+                    unfocusedTextColor = TextDark,
+                    focusedPlaceholderColor = TextMuted,
+                    unfocusedPlaceholderColor = TextMuted,
+                    focusedLeadingIconColor = DeepTeal,
+                    unfocusedLeadingIconColor = DeepTeal,
+                    cursorColor = DeepTeal,
                     focusedBorderColor = DeepTeal,
-                    unfocusedBorderColor = Color.LightGray
+                    unfocusedBorderColor = Color.LightGray,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
                 )
             )
 

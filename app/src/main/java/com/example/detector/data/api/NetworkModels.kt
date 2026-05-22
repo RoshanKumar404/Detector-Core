@@ -94,6 +94,7 @@ data class MapPropertiesDto(
     @SerializedName("image_url") val imageUrl: String,
     val prediction: String,
     val status: String,
+    @SerializedName("municipality_name") val municipalityName: String?,
     @SerializedName("created_at") val createdAt: String?
 )
 

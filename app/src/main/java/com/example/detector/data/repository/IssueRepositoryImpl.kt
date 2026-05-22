@@ -48,7 +48,8 @@ class IssueRepositoryImpl(
                 description = it.properties.prediction,
                 status = it.properties.status,
                 createdAt = it.properties.createdAt ?: "",
-                updatedAt = it.properties.createdAt ?: ""
+                updatedAt = it.properties.createdAt ?: "",
+                municipalityName = it.properties.municipalityName
             )
         }
     }
@@ -88,7 +89,8 @@ class IssueRepositoryImpl(
             description = prediction,
             status = "pending",
             createdAt = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),
-            updatedAt = ""
+            updatedAt = "",
+            municipalityName = result.municipalityName
         )
     }
 

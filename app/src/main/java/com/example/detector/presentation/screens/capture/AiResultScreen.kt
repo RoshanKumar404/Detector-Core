@@ -5,7 +5,10 @@ import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
@@ -17,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -42,6 +46,9 @@ fun AiResultScreen(
 
     var prediction by remember { mutableStateOf("Analyzing...") }
     var confidence by remember { mutableStateOf(0.0) }
+    var useManualLocation by remember { mutableStateOf(false) }
+    var manualLatitude by remember { mutableStateOf("") }
+    var manualLongitude by remember { mutableStateOf("") }
 
     LaunchedEffect(uiState) {
         when (val state = uiState) {
@@ -76,9 +83,10 @@ fun AiResultScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -185,6 +193,71 @@ fun AiResultScreen(
                             Text(text = noticeText, color = TextDark, fontSize = 14.sp)
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = CardDefaults.cardColors(containerColor = SurfaceLight)
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Checkbox(
+                                    checked = useManualLocation,
+                                    onCheckedChange = { useManualLocation = it },
+                                    colors = CheckboxDefaults.colors(checkedColor = DeepTeal)
+                                )
+                                Text(
+                                    text = "Enter location manually",
+                                    color = TextDark,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 14.sp
+                                )
+                            }
+
+                            Text(
+                                text = "Use this when GPS is unavailable or the image came from gallery.",
+                                color = TextMuted,
+                                fontSize = 12.sp
+                            )
+
+                            if (useManualLocation) {
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    OutlinedTextField(
+                                        value = manualLatitude,
+                                        onValueChange = { manualLatitude = it },
+                                        label = { Text("Latitude") },
+                                        placeholder = { Text("23.4118443") },
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                        singleLine = true,
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(8.dp),
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedBorderColor = DeepTeal
+                                        )
+                                    )
+                                    OutlinedTextField(
+                                        value = manualLongitude,
+                                        onValueChange = { manualLongitude = it },
+                                        label = { Text("Longitude") },
+                                        placeholder = { Text("85.2304231") },
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                        singleLine = true,
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(8.dp),
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedBorderColor = DeepTeal
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -206,7 +279,21 @@ fun AiResultScreen(
 
                 Button(
                     onClick = {
-                        viewModel.submitReport(context, Uri.decode(imagePath), prediction, confidence)
+                        val lat = if (useManualLocation) manualLatitude.trim().toDoubleOrNull() else null
+                        val lon = if (useManualLocation) manualLongitude.trim().toDoubleOrNull() else null
+
+                        if (useManualLocation && (lat == null || lon == null)) {
+                            Toast.makeText(context, "Enter valid latitude and longitude", Toast.LENGTH_SHORT).show()
+                        } else {
+                            viewModel.submitReport(
+                                context = context,
+                                imagePath = Uri.decode(imagePath),
+                                prediction = prediction,
+                                confidence = confidence,
+                                manualLatitude = lat,
+                                manualLongitude = lon
+                            )
+                        }
                     },
                     modifier = Modifier
                         .weight(1f)

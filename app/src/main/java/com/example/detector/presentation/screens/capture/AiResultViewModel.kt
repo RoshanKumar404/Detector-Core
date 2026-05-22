@@ -53,7 +53,14 @@ class AiResultViewModel(
         }
     }
 
-    fun submitReport(context: Context, imagePath: String, prediction: String, confidence: Double) {
+    fun submitReport(
+        context: Context,
+        imagePath: String,
+        prediction: String,
+        confidence: Double,
+        manualLatitude: Double? = null,
+        manualLongitude: Double? = null
+    ) {
         viewModelScope.launch {
             _uiState.value = AiResultUiState.Submitting
             try {
@@ -63,20 +70,34 @@ class AiResultViewModel(
                     return@launch
                 }
 
-                val loc = getReportLocation(context)
-                if (loc == null || !loc.hasValidReportCoordinates()) {
+                val manualLocation = if (manualLatitude != null && manualLongitude != null) {
+                    manualLatitude to manualLongitude
+                } else {
+                    null
+                }
+
+                if (manualLocation != null && !hasValidReportCoordinates(manualLocation.first, manualLocation.second)) {
+                    _uiState.value = AiResultUiState.Error("Please enter a valid latitude and longitude.")
+                    return@launch
+                }
+
+                val loc = if (manualLocation == null) getReportLocation(context) else null
+                if (manualLocation == null && (loc == null || !loc.hasValidReportCoordinates())) {
                     _uiState.value = AiResultUiState.Error(
-                        "Could not get a valid GPS location. Please enable location and try again outdoors."
+                        "Could not get GPS. Enter the location manually and try again."
                     )
                     return@launch
                 }
+
+                val latitude = manualLocation?.first ?: loc!!.latitude
+                val longitude = manualLocation?.second ?: loc!!.longitude
 
                 val bytes = file.readBytes()
                 issueRepository.createIssue(
                     imageBytes = bytes,
                     filename = file.name,
-                    latitude = loc.latitude,
-                    longitude = loc.longitude,
+                    latitude = latitude,
+                    longitude = longitude,
                     prediction = prediction,
                     confidence = confidence
                 )
@@ -126,6 +147,10 @@ class AiResultViewModel(
     }
 
     private fun Location.hasValidReportCoordinates(): Boolean {
+        return hasValidReportCoordinates(latitude, longitude)
+    }
+
+    private fun hasValidReportCoordinates(latitude: Double, longitude: Double): Boolean {
         return latitude in -90.0..90.0 &&
             longitude in -180.0..180.0 &&
             !(latitude == 0.0 && longitude == 0.0)
