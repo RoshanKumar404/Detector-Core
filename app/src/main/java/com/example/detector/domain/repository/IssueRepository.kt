@@ -5,6 +5,8 @@ import com.example.detector.domain.model.Issue
 interface IssueRepository {
     suspend fun getIssues(): List<Issue>
     suspend fun getMapIssues(): List<Issue>
+    suspend fun getGlobalIssues(): List<Issue>
+
     suspend fun createIssue(
         imageBytes: ByteArray,
         filename: String,

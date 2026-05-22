@@ -255,12 +255,28 @@ private fun IssueSummaryCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Text(
-                text = issue.municipalityName ?: "Municipality not available",
-                color = TextDark,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 14.sp
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = issue.municipalityName ?: "Municipality not available",
+                    color = TextDark,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 14.sp,
+                    modifier = Modifier.weight(1f)
+                )
+                if (!issue.userName.isNullOrBlank()) {
+                    Text(
+                        text = "by ${issue.userName}",
+                        color = TextMuted,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Normal
+                    )
+                }
+            }
+
 
             Spacer(modifier = Modifier.height(6.dp))
 
