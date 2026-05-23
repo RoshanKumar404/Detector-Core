@@ -32,6 +32,10 @@ class AiResultViewModel(
     private val issueRepository: IssueRepository
 ) : ViewModel() {
 
+    private companion object {
+        const val MIN_WATERLOGGED_CONFIDENCE = 0.88
+    }
+
     private val _uiState = MutableStateFlow<AiResultUiState>(AiResultUiState.Idle)
     val uiState: StateFlow<AiResultUiState> = _uiState.asStateFlow()
 
@@ -64,6 +68,13 @@ class AiResultViewModel(
         viewModelScope.launch {
             _uiState.value = AiResultUiState.Submitting
             try {
+                if (prediction.lowercase() != "waterlogged" || confidence < MIN_WATERLOGGED_CONFIDENCE) {
+                    _uiState.value = AiResultUiState.Error(
+                        "Only waterlogged results above 88% confidence can be submitted."
+                    )
+                    return@launch
+                }
+
                 val file = File(imagePath)
                 if (!file.exists()) {
                     _uiState.value = AiResultUiState.Error("Image file missing")
@@ -99,7 +110,8 @@ class AiResultViewModel(
                     latitude = latitude,
                     longitude = longitude,
                     prediction = prediction,
-                    confidence = confidence
+                    confidence = confidence,
+                    locationSource = if (manualLocation == null) "gps" else "manual"
                 )
 
                 _uiState.value = AiResultUiState.Success
