@@ -13,7 +13,8 @@ interface IssueRepository {
         latitude: Double,
         longitude: Double,
         prediction: String,
-        confidence: Double
+        confidence: Double,
+        locationSource: String
     ): Issue
     suspend fun predictImage(
         imageBytes: ByteArray,
