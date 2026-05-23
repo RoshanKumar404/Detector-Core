@@ -49,6 +49,7 @@ fun AiResultScreen(
     var useManualLocation by remember { mutableStateOf(false) }
     var manualLatitude by remember { mutableStateOf("") }
     var manualLongitude by remember { mutableStateOf("") }
+    val canSubmitPrediction = prediction.lowercase() == "waterlogged" && confidence >= 0.88
 
     LaunchedEffect(uiState) {
         when (val state = uiState) {
@@ -279,6 +280,15 @@ fun AiResultScreen(
 
                 Button(
                     onClick = {
+                        if (!canSubmitPrediction) {
+                            Toast.makeText(
+                                context,
+                                "Only waterlogged results above 88% confidence can be submitted.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            return@Button
+                        }
+
                         val lat = if (useManualLocation) manualLatitude.trim().toDoubleOrNull() else null
                         val lon = if (useManualLocation) manualLongitude.trim().toDoubleOrNull() else null
 
@@ -300,7 +310,9 @@ fun AiResultScreen(
                         .height(52.dp),
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = DeepTeal),
-                    enabled = uiState is AiResultUiState.Analyzed && uiState !is AiResultUiState.Submitting
+                    enabled = uiState is AiResultUiState.Analyzed &&
+                        uiState !is AiResultUiState.Submitting &&
+                        canSubmitPrediction
                 ) {
                     if (uiState is AiResultUiState.Submitting) {
                         CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
