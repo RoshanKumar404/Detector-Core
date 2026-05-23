@@ -80,7 +80,8 @@ class IssueRepositoryImpl(
         latitude: Double,
         longitude: Double,
         prediction: String,
-        confidence: Double
+        confidence: Double,
+        locationSource: String
     ): Issue {
         val requestFile = imageBytes.toRequestBody("image/jpeg".toMediaTypeOrNull(), 0, imageBytes.size)
         val imagePart = MultipartBody.Part.createFormData("image", filename, requestFile)
@@ -89,6 +90,8 @@ class IssueRepositoryImpl(
         val lonBody = longitude.toString().toRequestBody("text/plain".toMediaTypeOrNull())
         val predBody = prediction.toRequestBody("text/plain".toMediaTypeOrNull())
         val confBody = confidence.toString().toRequestBody("text/plain".toMediaTypeOrNull())
+        val fingerprintBody = sessionManager.getDeviceFingerprint().toRequestBody("text/plain".toMediaTypeOrNull())
+        val locationSourceBody = locationSource.toRequestBody("text/plain".toMediaTypeOrNull())
 
         val result = apiService.createIssue(
             token = getAuthToken(),
@@ -96,7 +99,9 @@ class IssueRepositoryImpl(
             latitude = latBody,
             longitude = lonBody,
             prediction = predBody,
-            confidence = confBody
+            confidence = confBody,
+            deviceFingerprint = fingerprintBody,
+            locationSource = locationSourceBody
         )
 
         return Issue(
