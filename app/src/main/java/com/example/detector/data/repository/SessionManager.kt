@@ -2,10 +2,13 @@ package com.example.detector.data.repository
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.provider.Settings
 import com.example.detector.domain.model.User
 import com.google.gson.Gson
+import java.security.MessageDigest
 
 class SessionManager(context: Context) {
+    private val appContext = context.applicationContext
     private val prefs: SharedPreferences = context.getSharedPreferences("detector_prefs", Context.MODE_PRIVATE)
     private val gson = Gson()
 
@@ -39,6 +42,14 @@ class SessionManager(context: Context) {
         } catch (e: Exception) {
             null
         }
+    }
+
+    fun getDeviceFingerprint(): String {
+        val androidId = Settings.Secure.getString(appContext.contentResolver, Settings.Secure.ANDROID_ID)
+            ?: "unknown-device"
+        return MessageDigest.getInstance("SHA-256")
+            .digest(androidId.toByteArray())
+            .joinToString("") { "%02x".format(it) }
     }
 
     fun clearSession() {
