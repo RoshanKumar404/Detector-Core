@@ -53,7 +53,9 @@ interface ApiService {
         @Part("latitude") latitude: RequestBody,
         @Part("longitude") longitude: RequestBody,
         @Part("prediction") prediction: RequestBody,
-        @Part("confidence") confidence: RequestBody
+        @Part("confidence") confidence: RequestBody,
+        @Part("device_fingerprint") deviceFingerprint: RequestBody,
+        @Part("location_source") locationSource: RequestBody
     ): CreateIssueResponseDto
 
     @Multipart
