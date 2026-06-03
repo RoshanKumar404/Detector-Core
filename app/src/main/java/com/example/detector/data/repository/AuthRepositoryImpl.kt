@@ -14,7 +14,7 @@ class AuthRepositoryImpl(
 ) : AuthRepository {
 
     override suspend fun login(email: String, password: String): User {
-        val response = apiService.login(LoginRequest(email, password))
+        val response = apiService.login(LoginRequest(email.trim(), password))
         
         val domainUser = User(
             id = response.user.id,
@@ -43,10 +43,10 @@ class AuthRepositoryImpl(
     ) {
         apiService.register(
             RegisterRequest(
-                name = name,
-                email = email,
+                name = name.trim(),
+                email = email.trim(),
                 password = password,
-                phone = phone,
+                phone = phone?.trim(),
                 municipalityId = municipalityId,
                 wardId = wardId
             )
