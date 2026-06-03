@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import java.io.File
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withTimeoutOrNull
+import java.time.Instant
 
 sealed interface AiResultUiState {
     object Idle : AiResultUiState
@@ -111,6 +112,7 @@ class AiResultViewModel(
                     longitude = longitude,
                     prediction = prediction,
                     confidence = confidence,
+                    capturedAt = Instant.ofEpochMilli(file.lastModified()).toString(),
                     locationSource = if (manualLocation == null) "gps" else "manual"
                 )
 

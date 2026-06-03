@@ -14,6 +14,7 @@ interface IssueRepository {
         longitude: Double,
         prediction: String,
         confidence: Double,
+        capturedAt: String,
         locationSource: String
     ): Issue
     suspend fun predictImage(

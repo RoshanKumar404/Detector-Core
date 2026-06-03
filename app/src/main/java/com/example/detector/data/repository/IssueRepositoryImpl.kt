@@ -6,7 +6,6 @@ import com.example.detector.domain.repository.IssueRepository
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.io.IOException
 
 class IssueRepositoryImpl(
     private val apiService: ApiService,
@@ -18,6 +17,10 @@ class IssueRepositoryImpl(
             ?: throw IllegalStateException("User is not authenticated")
     }
 
+    private fun isWaterlogged(prediction: String): Boolean {
+        return prediction.trim().lowercase() == "waterlogged"
+    }
+
     override suspend fun getIssues(): List<Issue> {
         return apiService.getIssues(getAuthToken()).map {
             Issue(
@@ -26,7 +29,7 @@ class IssueRepositoryImpl(
                 imageUrl = it.imageUrl,
                 latitude = it.latitude,
                 longitude = it.longitude,
-                severity = if (it.prediction == "waterlogged") "high" else "low",
+                severity = if (isWaterlogged(it.prediction)) "high" else "low",
                 description = it.prediction,
                 status = it.status,
                 createdAt = it.createdAt,
@@ -44,7 +47,7 @@ class IssueRepositoryImpl(
                 imageUrl = it.properties.imageUrl,
                 latitude = it.geometry.coordinates[1], // GeoJSON is [lon, lat]
                 longitude = it.geometry.coordinates[0],
-                severity = if (it.properties.prediction == "waterlogged") "high" else "low",
+                severity = if (isWaterlogged(it.properties.prediction)) "high" else "low",
                 description = it.properties.prediction,
                 status = it.properties.status,
                 createdAt = it.properties.createdAt ?: "",
@@ -62,7 +65,7 @@ class IssueRepositoryImpl(
                 imageUrl = it.imageUrl,
                 latitude = it.latitude,
                 longitude = it.longitude,
-                severity = if (it.prediction == "waterlogged") "high" else "low",
+                severity = if (isWaterlogged(it.prediction)) "high" else "low",
                 description = it.prediction,
                 status = it.status,
                 createdAt = it.createdAt,
@@ -81,6 +84,7 @@ class IssueRepositoryImpl(
         longitude: Double,
         prediction: String,
         confidence: Double,
+        capturedAt: String,
         locationSource: String
     ): Issue {
         val requestFile = imageBytes.toRequestBody("image/jpeg".toMediaTypeOrNull(), 0, imageBytes.size)
@@ -90,6 +94,7 @@ class IssueRepositoryImpl(
         val lonBody = longitude.toString().toRequestBody("text/plain".toMediaTypeOrNull())
         val predBody = prediction.toRequestBody("text/plain".toMediaTypeOrNull())
         val confBody = confidence.toString().toRequestBody("text/plain".toMediaTypeOrNull())
+        val capturedAtBody = capturedAt.toRequestBody("text/plain".toMediaTypeOrNull())
         val fingerprintBody = sessionManager.getDeviceFingerprint().toRequestBody("text/plain".toMediaTypeOrNull())
         val locationSourceBody = locationSource.toRequestBody("text/plain".toMediaTypeOrNull())
 
@@ -100,6 +105,7 @@ class IssueRepositoryImpl(
             longitude = lonBody,
             prediction = predBody,
             confidence = confBody,
+            capturedAt = capturedAtBody,
             deviceFingerprint = fingerprintBody,
             locationSource = locationSourceBody
         )
@@ -110,7 +116,7 @@ class IssueRepositoryImpl(
             imageUrl = result.imageUrl,
             latitude = latitude,
             longitude = longitude,
-            severity = if (prediction == "waterlogged") "high" else "low",
+            severity = if (isWaterlogged(prediction)) "high" else "low",
             description = prediction,
             status = "pending",
             createdAt = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date()),

@@ -54,6 +54,7 @@ interface ApiService {
         @Part("longitude") longitude: RequestBody,
         @Part("prediction") prediction: RequestBody,
         @Part("confidence") confidence: RequestBody,
+        @Part("captured_at") capturedAt: RequestBody,
         @Part("device_fingerprint") deviceFingerprint: RequestBody,
         @Part("location_source") locationSource: RequestBody
     ): CreateIssueResponseDto
@@ -65,9 +66,6 @@ interface ApiService {
     ): PredictResponse
 
     companion object {
-        // Change to your server's backend base URL
-        private const val BASE_URL = "https://detectorbackend.onrender.com/api/"
-
         fun create(): ApiService {
             val logger = HttpLoggingInterceptor().apply {
                 level = if (BuildConfig.DEBUG) {
@@ -82,7 +80,7 @@ interface ApiService {
                 .build()
 
             return Retrofit.Builder()
-                .baseUrl(BASE_URL)
+                .baseUrl(BuildConfig.API_BASE_URL)
                 .client(client)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()

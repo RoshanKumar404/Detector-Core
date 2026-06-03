@@ -4,6 +4,10 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+val debugApiBaseUrl = providers.gradleProperty("API_BASE_URL")
+    .orElse("http://10.0.2.2:1000/api/")
+    .get()
+
 android {
     namespace = "com.example.detector"
     compileSdk = 36
@@ -34,9 +38,22 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField(
+                "String",
+                "API_BASE_URL",
+                "\"$debugApiBaseUrl\""
+            )
+        }
+
         release {
             isMinifyEnabled = true
             isShrinkResources = true
+            buildConfigField(
+                "String",
+                "API_BASE_URL",
+                "\"https://detectorbackend.onrender.com/api/\""
+            )
 
             proguardFiles(
                 getDefaultProguardFile(

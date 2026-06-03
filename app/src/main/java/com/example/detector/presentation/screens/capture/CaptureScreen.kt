@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
 import android.net.Uri
+import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -321,7 +322,22 @@ private fun copyGalleryImageToCache(context: Context, uri: Uri): File? {
                 input.copyTo(output)
             }
         } ?: return null
+        outputFile.setLastModified(getGalleryImageModifiedTime(context, uri) ?: 0L)
         outputFile
+    } catch (e: Exception) {
+        null
+    }
+}
+
+private fun getGalleryImageModifiedTime(context: Context, uri: Uri): Long? {
+    return try {
+        val projection = arrayOf(MediaStore.MediaColumns.DATE_MODIFIED)
+        context.contentResolver.query(uri, projection, null, null, null)?.use { cursor ->
+            if (!cursor.moveToFirst()) return@use null
+            val index = cursor.getColumnIndex(MediaStore.MediaColumns.DATE_MODIFIED)
+            if (index < 0 || cursor.isNull(index)) return@use null
+            cursor.getLong(index) * 1000L
+        }
     } catch (e: Exception) {
         null
     }

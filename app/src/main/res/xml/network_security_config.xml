@@ -6,6 +6,13 @@
         <domain includeSubdomains="true">unpkg.com</domain>
     </domain-config>
 
+    <!-- Local backend for debug/emulator testing. Release API still uses HTTPS. -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain>10.0.2.2</domain>
+        <domain>localhost</domain>
+        <domain>127.0.0.1</domain>
+    </domain-config>
+
     <!-- Default: enforce HTTPS for everything else -->
     <base-config cleartextTrafficPermitted="false">
         <trust-anchors>
