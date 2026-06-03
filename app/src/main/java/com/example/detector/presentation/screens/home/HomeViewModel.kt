@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeout
 
 sealed interface HomeUiState {
     object Loading : HomeUiState
@@ -48,9 +47,7 @@ class HomeViewModel(
             )
 
             try {
-                val issues = withTimeout(15_000) {
-                    issueRepository.getIssues()
-                }
+                val issues = issueRepository.getIssues()
 
                 // Calculate local stats based on actual reports
                 val newCount = issues.count { it.status.lowercase() == "pending" }

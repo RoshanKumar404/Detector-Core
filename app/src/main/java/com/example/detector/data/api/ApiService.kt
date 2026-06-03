@@ -8,6 +8,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
 import com.example.detector.BuildConfig
+import java.util.concurrent.TimeUnit
 
 interface ApiService {
 
@@ -77,6 +78,9 @@ interface ApiService {
 
             val client = OkHttpClient.Builder()
                 .addInterceptor(logger)
+                .connectTimeout(60, TimeUnit.SECONDS)
+                .readTimeout(60, TimeUnit.SECONDS)
+                .writeTimeout(60, TimeUnit.SECONDS)
                 .build()
 
             return Retrofit.Builder()

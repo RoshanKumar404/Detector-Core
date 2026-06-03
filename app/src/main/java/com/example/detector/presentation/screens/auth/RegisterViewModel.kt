@@ -43,7 +43,9 @@ class RegisterViewModel(
             try {
                 _municipalities.value = authRepository.getMunicipalities()
             } catch (e: Exception) {
-                // Silently log or handle error mapping
+                _uiState.value = RegisterUiState.Error(
+                    e.message ?: "Failed to load municipalities from backend."
+                )
             } finally {
                 _isLoadingGeo.value = false
             }
@@ -57,7 +59,9 @@ class RegisterViewModel(
             try {
                 _wards.value = authRepository.getWards(municipalityId)
             } catch (e: Exception) {
-                // Silently log
+                _uiState.value = RegisterUiState.Error(
+                    e.message ?: "Failed to load wards from backend."
+                )
             } finally {
                 _isLoadingGeo.value = false
             }
