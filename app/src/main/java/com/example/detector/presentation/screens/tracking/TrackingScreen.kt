@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.detector.domain.model.Issue
+import com.example.detector.presentation.components.RefreshableContent
 import com.example.detector.presentation.navigation.Screen
 import com.example.detector.presentation.screens.home.BottomNavigationBar
 import com.example.detector.ui.theme.*
@@ -46,57 +47,61 @@ fun TrackingScreen(navController: NavController, viewModel: TrackingViewModel) {
         },
         containerColor = LightBackground
     ) { innerPadding ->
-        Column(
+        RefreshableContent(
+            isRefreshing = uiState is TrackingUiState.Loading,
+            onRefresh = { viewModel.loadIssues() },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // Segmented Control Filter Tabs Row
-            FilterTabsRow(
-                selectedFilter = selectedFilter,
-                onFilterSelected = { viewModel.setFilter(it) }
-            )
+            Column(modifier = Modifier.fillMaxSize()) {
+                // Segmented Control Filter Tabs Row
+                FilterTabsRow(
+                    selectedFilter = selectedFilter,
+                    onFilterSelected = { viewModel.setFilter(it) }
+                )
 
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-            when (val state = uiState) {
-                is TrackingUiState.Loading -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = DeepTeal)
+                when (val state = uiState) {
+                    is TrackingUiState.Loading -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = DeepTeal)
+                        }
                     }
-                }
-                is TrackingUiState.Error -> {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(text = state.message, color = Color.Red)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Button(onClick = { viewModel.loadIssues() }) {
-                                Text("Retry")
+                    is TrackingUiState.Error -> {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(text = state.message, color = Color.Red)
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Button(onClick = { viewModel.loadIssues() }) {
+                                    Text("Retry")
+                                }
                             }
                         }
                     }
-                }
-                is TrackingUiState.Success -> {
-                    val filteredList = viewModel.getFilteredIssues(state.issues)
-                    if (filteredList.isEmpty()) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(24.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = "No reports found for '$selectedFilter'", color = TextMuted)
-                        }
-                    } else {
-                        LazyColumn(
-                            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
-                            verticalArrangement = Arrangement.spacedBy(14.dp),
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            items(filteredList) { report ->
-                                TrackingReportCard(report = report, onClick = {
-                                    navController.navigate(Screen.IssueDetails.createRoute(report.id))
-                                })
+                    is TrackingUiState.Success -> {
+                        val filteredList = viewModel.getFilteredIssues(state.issues)
+                        if (filteredList.isEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(24.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(text = "No reports found for '$selectedFilter'", color = TextMuted)
+                            }
+                        } else {
+                            LazyColumn(
+                                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+                                verticalArrangement = Arrangement.spacedBy(14.dp),
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                items(filteredList) { report ->
+                                    TrackingReportCard(report = report, onClick = {
+                                        navController.navigate(Screen.IssueDetails.createRoute(report.id))
+                                    })
+                                }
                             }
                         }
                     }

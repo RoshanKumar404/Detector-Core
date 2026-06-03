@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.detector.domain.model.Issue
+import com.example.detector.presentation.components.RefreshableContent
 import com.example.detector.presentation.navigation.Screen
 import com.example.detector.ui.theme.DeepTeal
 import com.example.detector.ui.theme.LightBackground
@@ -67,119 +68,118 @@ fun AllIssuesScreen(
         },
         containerColor = LightBackground
     ) { innerPadding ->
-        when (val state = uiState) {
-            is AllIssuesUiState.Loading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = DeepTeal)
-                }
-            }
-            is AllIssuesUiState.Error -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                        .padding(24.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(state.message, color = Color(0xFFE53935), fontSize = 14.sp)
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Button(
-                            onClick = { viewModel.loadIssues() },
-                            colors = ButtonDefaults.buttonColors(containerColor = DeepTeal),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Text("Retry", color = Color.White)
-                        }
+        RefreshableContent(
+            isRefreshing = uiState is AllIssuesUiState.Loading,
+            onRefresh = { viewModel.loadIssues() },
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            when (val state = uiState) {
+                is AllIssuesUiState.Loading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = DeepTeal)
                     }
                 }
-            }
-            is AllIssuesUiState.Success -> {
-                var selectedMunicipality by remember { mutableStateOf("All") }
-
-                val municipalities = remember(state.issues) {
-                    val list = state.issues.mapNotNull { it.municipalityName }
-                        .filter { it.isNotBlank() }
-                        .distinct()
-                        .sorted()
-                    listOf("All") + list
-                }
-
-                val filteredIssues = remember(state.issues, selectedMunicipality) {
-                    if (selectedMunicipality == "All") {
-                        state.issues
-                    } else {
-                        state.issues.filter { it.municipalityName == selectedMunicipality }
-                    }
-                }
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                ) {
-                    if (municipalities.size > 1) {
-                        LazyRow(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(LightBackground)
-                        ) {
-                            items(municipalities) { municipality ->
-                                val isSelected = municipality == selectedMunicipality
-                                FilterChip(
-                                    selected = isSelected,
-                                    onClick = { selectedMunicipality = municipality },
-                                    label = { Text(municipality) },
-                                    colors = FilterChipDefaults.filterChipColors(
-                                        selectedContainerColor = DeepTeal,
-                                        selectedLabelColor = Color.White,
-                                        containerColor = SurfaceLight,
-                                        labelColor = TextMuted
-                                    ),
-                                    border = FilterChipDefaults.filterChipBorder(
-                                        enabled = true,
-                                        selected = isSelected,
-                                        selectedBorderColor = DeepTeal,
-                                        borderColor = Color.LightGray.copy(alpha = 0.5f),
-                                        borderWidth = 1.dp,
-                                        selectedBorderWidth = 1.dp
-                                    ),
-                                    shape = RoundedCornerShape(8.dp)
-                                )
+                is AllIssuesUiState.Error -> {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(state.message, color = Color(0xFFE53935), fontSize = 14.sp)
+                            Spacer(modifier = Modifier.height(12.dp))
+                            Button(
+                                onClick = { viewModel.loadIssues() },
+                                colors = ButtonDefaults.buttonColors(containerColor = DeepTeal),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text("Retry", color = Color.White)
                             }
                         }
                     }
+                }
+                is AllIssuesUiState.Success -> {
+                    var selectedMunicipality by remember { mutableStateOf("All") }
 
-                    if (filteredIssues.isEmpty()) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = if (selectedMunicipality == "All") "No issues found." else "No issues found for $selectedMunicipality.",
-                                color = TextMuted
-                            )
+                    val municipalities = remember(state.issues) {
+                        val list = state.issues.mapNotNull { it.municipalityName }
+                            .filter { it.isNotBlank() }
+                            .distinct()
+                            .sorted()
+                        listOf("All") + list
+                    }
+
+                    val filteredIssues = remember(state.issues, selectedMunicipality) {
+                        if (selectedMunicipality == "All") {
+                            state.issues
+                        } else {
+                            state.issues.filter { it.municipalityName == selectedMunicipality }
                         }
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            items(filteredIssues, key = { it.id }) { issue ->
-                                IssueSummaryCard(
-                                    issue = issue,
-                                    onClick = {
-                                        navController.navigate(Screen.IssueDetails.createRoute(issue.id))
-                                    }
+                    }
+
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        if (municipalities.size > 1) {
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .background(LightBackground)
+                            ) {
+                                items(municipalities) { municipality ->
+                                    val isSelected = municipality == selectedMunicipality
+                                    FilterChip(
+                                        selected = isSelected,
+                                        onClick = { selectedMunicipality = municipality },
+                                        label = { Text(municipality) },
+                                        colors = FilterChipDefaults.filterChipColors(
+                                            selectedContainerColor = DeepTeal,
+                                            selectedLabelColor = Color.White,
+                                            containerColor = SurfaceLight,
+                                            labelColor = TextMuted
+                                        ),
+                                        border = FilterChipDefaults.filterChipBorder(
+                                            enabled = true,
+                                            selected = isSelected,
+                                            selectedBorderColor = DeepTeal,
+                                            borderColor = Color.LightGray.copy(alpha = 0.5f),
+                                            borderWidth = 1.dp,
+                                            selectedBorderWidth = 1.dp
+                                        ),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        if (filteredIssues.isEmpty()) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = if (selectedMunicipality == "All") "No issues found." else "No issues found for $selectedMunicipality.",
+                                    color = TextMuted
                                 )
+                            }
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                items(filteredIssues, key = { it.id }) { issue ->
+                                    IssueSummaryCard(
+                                        issue = issue,
+                                        onClick = {
+                                            navController.navigate(Screen.IssueDetails.createRoute(issue.id))
+                                        }
+                                    )
+                                }
                             }
                         }
                     }

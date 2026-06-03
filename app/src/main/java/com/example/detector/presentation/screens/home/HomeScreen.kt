@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.detector.domain.model.Issue
+import com.example.detector.presentation.components.RefreshableContent
 import com.example.detector.presentation.navigation.Screen
 import com.example.detector.ui.theme.*
 
@@ -38,41 +39,41 @@ fun HomeScreen(navController: NavController, viewModel: HomeViewModel) {
         },
         containerColor = LightBackground
     ) { innerPadding ->
-        when (val state = uiState) {
-            is HomeUiState.Loading -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(color = DeepTeal)
+        RefreshableContent(
+            isRefreshing = uiState is HomeUiState.Loading,
+            onRefresh = { viewModel.loadDashboardData() },
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            when (val state = uiState) {
+                is HomeUiState.Loading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = DeepTeal)
+                    }
                 }
-            }
-            is HomeUiState.Error -> {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(text = state.message, color = Color.Red, fontSize = 16.sp)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Button(onClick = { viewModel.loadDashboardData() }) {
-                            Text("Retry")
+                is HomeUiState.Error -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(text = state.message, color = Color.Red, fontSize = 16.sp)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(onClick = { viewModel.loadDashboardData() }) {
+                                Text("Retry")
+                            }
                         }
                     }
                 }
-            }
-            is HomeUiState.Success -> {
-                HomeScreenContent(
-                    state = state,
-                    navController = navController,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                )
+                is HomeUiState.Success -> {
+                    HomeScreenContent(
+                        state = state,
+                        navController = navController,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
         }
     }
