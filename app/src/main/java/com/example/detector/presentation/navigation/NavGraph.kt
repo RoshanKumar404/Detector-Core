@@ -1,12 +1,15 @@
 package com.example.detector.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.detector.data.ServiceLocator
 import com.example.detector.presentation.ViewModelFactory
 import com.example.detector.presentation.screens.auth.LoginScreen
 import com.example.detector.presentation.screens.auth.RegisterScreen
@@ -48,14 +51,18 @@ fun NavGraph(navController: NavHostController) {
         }
 
         composable(Screen.Home.route) {
-            HomeScreen(
-                navController = navController,
-                viewModel = viewModel(factory = factory)
-            )
+            RequireAuth(navController) {
+                HomeScreen(
+                    navController = navController,
+                    viewModel = viewModel(factory = factory)
+                )
+            }
         }
 
         composable(Screen.Capture.route) {
-            CaptureScreen(navController = navController)
+            RequireAuth(navController) {
+                CaptureScreen(navController = navController)
+            }
         }
 
         composable(
@@ -67,32 +74,40 @@ fun NavGraph(navController: NavHostController) {
             )
         ) { backStackEntry ->
             val imagePath = backStackEntry.arguments?.getString("imagePath") ?: ""
-            AiResultScreen(
-                navController = navController,
-                viewModel = viewModel(factory = factory),
-                imagePath = imagePath
-            )
+            RequireAuth(navController) {
+                AiResultScreen(
+                    navController = navController,
+                    viewModel = viewModel(factory = factory),
+                    imagePath = imagePath
+                )
+            }
         }
 
         composable(Screen.Map.route) {
-            MapScreen(
-                navController = navController,
-                viewModel = viewModel(factory = factory)
-            )
+            RequireAuth(navController) {
+                MapScreen(
+                    navController = navController,
+                    viewModel = viewModel(factory = factory)
+                )
+            }
         }
 
         composable(Screen.AllIssues.route) {
-            AllIssuesScreen(
-                navController = navController,
-                viewModel = viewModel(factory = factory)
-            )
+            RequireAuth(navController) {
+                AllIssuesScreen(
+                    navController = navController,
+                    viewModel = viewModel(factory = factory)
+                )
+            }
         }
 
         composable(Screen.Tracking.route) {
-            TrackingScreen(
-                navController = navController,
-                viewModel = viewModel(factory = factory)
-            )
+            RequireAuth(navController) {
+                TrackingScreen(
+                    navController = navController,
+                    viewModel = viewModel(factory = factory)
+                )
+            }
         }
 
         composable(
@@ -102,19 +117,47 @@ fun NavGraph(navController: NavHostController) {
             )
         ) { backStackEntry ->
             val issueId = backStackEntry.arguments?.getString("issueId") ?: ""
-            IssueDetailsScreen(
-                navController = navController,
-                viewModel = viewModel(factory = factory),
-                issueId = issueId
-            )
+            RequireAuth(navController) {
+                IssueDetailsScreen(
+                    navController = navController,
+                    viewModel = viewModel(factory = factory),
+                    issueId = issueId
+                )
+            }
         }
 
         composable(Screen.Notifications.route) {
-            NotificationsScreen(navController = navController)
+            RequireAuth(navController) {
+                NotificationsScreen(navController = navController)
+            }
         }
 
         composable(Screen.Profile.route) {
-            ProfileScreen(navController = navController)
+            RequireAuth(navController) {
+                ProfileScreen(navController = navController)
+            }
         }
+    }
+}
+
+@Composable
+private fun RequireAuth(
+    navController: NavHostController,
+    content: @Composable () -> Unit
+) {
+    val sessionManager = remember { ServiceLocator.sessionManager }
+    val hasToken = !sessionManager.getAuthToken().isNullOrBlank()
+
+    LaunchedEffect(hasToken) {
+        if (!hasToken) {
+            navController.navigate(Screen.Login.route) {
+                popUpTo(Screen.Splash.route) { inclusive = true }
+                launchSingleTop = true
+            }
+        }
+    }
+
+    if (hasToken) {
+        content()
     }
 }
