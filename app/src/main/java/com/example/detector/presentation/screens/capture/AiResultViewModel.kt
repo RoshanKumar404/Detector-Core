@@ -112,7 +112,7 @@ class AiResultViewModel(
                     longitude = longitude,
                     prediction = prediction,
                     confidence = confidence,
-                    capturedAt = Instant.ofEpochMilli(file.lastModified()).toString(),
+                    capturedAt = Instant.now().toString(),
                     locationSource = if (manualLocation == null) "gps" else "manual"
                 )
 
