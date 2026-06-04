@@ -105,6 +105,10 @@ class AiResultViewModel(
                 val longitude = manualLocation?.second ?: loc!!.longitude
 
                 val bytes = file.readBytes()
+                val capturedAtUtc = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", java.util.Locale.US).apply {
+                    timeZone = java.util.TimeZone.getTimeZone("UTC")
+                }.format(java.util.Date())
+
                 issueRepository.createIssue(
                     imageBytes = bytes,
                     filename = file.name,
@@ -112,13 +116,28 @@ class AiResultViewModel(
                     longitude = longitude,
                     prediction = prediction,
                     confidence = confidence,
-                    capturedAt = Instant.now().toString(),
+                    capturedAt = capturedAtUtc,
                     locationSource = if (manualLocation == null) "gps" else "manual"
                 )
 
                 _uiState.value = AiResultUiState.Success
             } catch (e: Exception) {
-                _uiState.value = AiResultUiState.Error("Failed to submit report: ${e.message}")
+                val errorMsg = if (e is retrofit2.HttpException) {
+                    try {
+                        val errorBody = e.response()?.errorBody()?.string()
+                        if (!errorBody.isNullOrEmpty()) {
+                            val json = org.json.JSONObject(errorBody)
+                            json.optString("error", e.message())
+                        } else {
+                            "HTTP ${e.code()}: ${e.message()}"
+                        }
+                    } catch (ex: Exception) {
+                        "HTTP ${e.code()}: ${e.message()}"
+                    }
+                } else {
+                    e.message ?: "Unknown error"
+                }
+                _uiState.value = AiResultUiState.Error("Failed to submit report: $errorMsg")
             }
         }
     }
