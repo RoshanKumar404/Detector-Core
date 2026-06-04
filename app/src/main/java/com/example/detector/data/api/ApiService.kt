@@ -1,13 +1,17 @@
 package com.example.detector.data.api
 
+import okhttp3.Interceptor
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.RequestBody
+import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
 import com.example.detector.BuildConfig
+import java.io.IOException
+import java.net.SocketTimeoutException
 import java.util.concurrent.TimeUnit
 
 interface ApiService {
@@ -63,6 +67,7 @@ interface ApiService {
     @Multipart
     @POST("predict/")
     suspend fun predictImage(
+        @Header("Authorization") token: String,
         @Part image: MultipartBody.Part
     ): PredictResponse
 
@@ -76,11 +81,31 @@ interface ApiService {
                 }
             }
 
+            // Retries once after 3 s on timeout/IO error to survive Render cold-starts (~30-60 s wake-up).
+            val coldStartRetry = Interceptor { chain ->
+                var response: Response? = null
+                var lastError: IOException? = null
+                for (attempt in 1..2) {
+                    try {
+                        response = chain.proceed(chain.request())
+                        break
+                    } catch (e: SocketTimeoutException) {
+                        lastError = e
+                        if (attempt < 2) Thread.sleep(3_000)
+                    } catch (e: IOException) {
+                        lastError = e
+                        if (attempt < 2) Thread.sleep(3_000)
+                    }
+                }
+                response ?: throw lastError!!
+            }
+
             val client = OkHttpClient.Builder()
                 .addInterceptor(logger)
-                .connectTimeout(60, TimeUnit.SECONDS)
-                .readTimeout(60, TimeUnit.SECONDS)
-                .writeTimeout(60, TimeUnit.SECONDS)
+                .addInterceptor(coldStartRetry)
+                .connectTimeout(90, TimeUnit.SECONDS)
+                .readTimeout(90, TimeUnit.SECONDS)
+                .writeTimeout(90, TimeUnit.SECONDS)
                 .build()
 
             return Retrofit.Builder()

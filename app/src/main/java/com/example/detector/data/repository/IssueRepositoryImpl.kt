@@ -33,7 +33,13 @@ class IssueRepositoryImpl(
                 description = it.prediction,
                 status = it.status,
                 createdAt = it.createdAt,
-                updatedAt = it.createdAt
+                updatedAt = it.createdAt,
+                municipalityName = it.municipalityName,
+                userName = it.userName,
+                verificationStatus = it.verificationStatus,
+                verificationWeight = it.verificationWeight,
+                verificationScore = it.verificationScore,
+                fraudFlags = it.fraudFlags
             )
         }
     }
@@ -71,7 +77,11 @@ class IssueRepositoryImpl(
                 createdAt = it.createdAt,
                 updatedAt = it.createdAt,
                 municipalityName = it.municipalityName,
-                userName = it.userName
+                userName = it.userName,
+                verificationStatus = it.verificationStatus,
+                verificationWeight = it.verificationWeight,
+                verificationScore = it.verificationScore,
+                fraudFlags = it.fraudFlags
             )
         }
     }
@@ -132,7 +142,7 @@ class IssueRepositoryImpl(
         val requestFile = imageBytes.toRequestBody("image/jpeg".toMediaTypeOrNull(), 0, imageBytes.size)
         val imagePart = MultipartBody.Part.createFormData("image", filename, requestFile)
 
-        val result = apiService.predictImage(imagePart)
+        val result = apiService.predictImage(getAuthToken(), imagePart)
         return Pair(result.prediction, result.confidence)
     }
 }

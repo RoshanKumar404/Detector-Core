@@ -65,6 +65,10 @@ data class IssueDto(
     val prediction: String,
     val confidence: Double,
     val status: String,
+    @SerializedName("verification_status") val verificationStatus: String?,
+    @SerializedName("verification_weight") val verificationWeight: Double?,
+    @SerializedName("verification_score") val verificationScore: Double?,
+    @SerializedName("fraud_flags") val fraudFlags: List<String>?,
     @SerializedName("created_at") val createdAt: String
 )
 
@@ -98,7 +102,11 @@ data class MapPropertiesDto(
     @SerializedName("image_url") val imageUrl: String,
     val prediction: String,
     val status: String,
+    @SerializedName("municipality_id") val municipalityId: Int?,
     @SerializedName("municipality_name") val municipalityName: String?,
+    @SerializedName("verification_status") val verificationStatus: String?,
+    @SerializedName("verification_weight") val verificationWeight: Double?,
+    @SerializedName("verification_score") val verificationScore: Double?,
     @SerializedName("created_at") val createdAt: String?
 )
 
